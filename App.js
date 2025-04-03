@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { StatusBar } from "expo-status-bar";
 import { db } from "./firebaseConfig";
 import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
 import {
@@ -13,29 +12,46 @@ import {
 } from "react-native";
 import * as Crypto from "expo-crypto";
 
+// Główna aplikacja zarządzająca ekranami
 export default function App() {
-  const [screen, setScreen] = useState("login");
-  const [userData, setUserData] = useState(null);
-  
+  const [screen, setScreen] = useState("login"); // Stan przechowujący aktualny ekran
+  const [userData, setUserData] = useState(null); // Przechowuje dane zalogowanego użytkownika
+
   return (
     <View style={styles.container}>
-      {screen === "login" && <LoginScreen onRegister={() => setScreen("register")} onLogin={(user) => { setUserData(user); setScreen("home"); }} />}
-      {screen === "register" && <RegisterScreen onLogin={() => setScreen("login")} />}
-      {screen === "home" && <HomeScreen user={userData} onLogout={() => setScreen("login")} />}
+      {screen === "login" && (
+        <LoginScreen
+          onRegister={() => setScreen("register")}
+          onLogin={(user) => {
+            setUserData(user);
+            setScreen("home");
+          }}
+        />
+      )}
+      {screen === "register" && <RegisterScreen onLogin={() => setScreen("home")} />}
+      {screen === "home" && (
+        <HomeScreen
+          user={userData}
+          onLogout={() => setScreen("login")}
+          onRegister={() => setScreen("register")}
+        />
+      )}
     </View>
   );
 }
 
-function LoginScreen({ onRegister, onLogin }) {
+// Ekran logowania
+function LoginScreen({ onLogin }) {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
 
+  // Obsługuje proces logowania
   const handleLogin = async () => {
     if (!login || !password) {
       Alert.alert("Błąd", "Proszę wypełnić wszystkie pola");
       return;
     }
-    
+
     try {
       const usersRef = collection(db, "users");
       const q = query(usersRef, where("login", "==", login));
@@ -48,7 +64,10 @@ function LoginScreen({ onRegister, onLogin }) {
 
       const userDoc = querySnapshot.docs[0];
       const userData = userDoc.data();
-      const hashedPassword = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, password);
+      const hashedPassword = await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256,
+        password
+      );
 
       if (userData.password === hashedPassword) {
         onLogin(userData);
@@ -63,18 +82,27 @@ function LoginScreen({ onRegister, onLogin }) {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Logowanie</Text>
-      <TextInput style={styles.input} placeholder="Podaj login" placeholderTextColor="#bbb" onChangeText={setLogin} />
-      <TextInput style={styles.input} secureTextEntry placeholder="Podaj hasło" placeholderTextColor="#bbb" onChangeText={setPassword} />
+      <TextInput
+        style={styles.input}
+        placeholder="Podaj login"
+        placeholderTextColor="#bbb"
+        onChangeText={setLogin}
+      />
+      <TextInput
+        style={styles.input}
+        secureTextEntry
+        placeholder="Podaj hasło"
+        placeholderTextColor="#bbb"
+        onChangeText={setPassword}
+      />
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Zaloguj się</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={onRegister}>
-        <Text style={styles.link}>Nie masz konta? Zarejestruj się</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
+// Ekran rejestracji użytkownika
 function RegisterScreen({ onLogin }) {
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -82,6 +110,7 @@ function RegisterScreen({ onLogin }) {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
 
+  // Obsługuje proces rejestracji
   const handleRegister = async () => {
     if (!email || !firstName || !lastName || !login || !password) {
       Alert.alert("Błąd", "Proszę wypełnić wszystkie pola");
@@ -89,7 +118,10 @@ function RegisterScreen({ onLogin }) {
     }
 
     try {
-      const hashedPassword = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, password);
+      const hashedPassword = await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256,
+        password
+      );
       await addDoc(collection(db, "users"), {
         email,
         firstName,
@@ -106,23 +138,24 @@ function RegisterScreen({ onLogin }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Rejestracja</Text>
-      <TextInput style={styles.input} placeholder="Email" placeholderTextColor="#bbb" onChangeText={setEmail} />
-      <TextInput style={styles.input} placeholder="Imię" placeholderTextColor="#bbb" onChangeText={setFirstName} />
-      <TextInput style={styles.input} placeholder="Nazwisko" placeholderTextColor="#bbb" onChangeText={setLastName} />
-      <TextInput style={styles.input} placeholder="Login" placeholderTextColor="#bbb" onChangeText={setLogin} />
-      <TextInput style={styles.input} secureTextEntry placeholder="Hasło" placeholderTextColor="#bbb" onChangeText={setPassword} />
+      <Text style={styles.title}>Dodaj nowego użytkownika</Text>
+      <TextInput style={styles.input} placeholder="Email" onChangeText={setEmail} />
+      <TextInput style={styles.input} placeholder="Imię" onChangeText={setFirstName} />
+      <TextInput style={styles.input} placeholder="Nazwisko" onChangeText={setLastName} />
+      <TextInput style={styles.input} placeholder="Login" onChangeText={setLogin} />
+      <TextInput style={styles.input} secureTextEntry placeholder="Hasło" onChangeText={setPassword} />
       <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Zarejestruj się</Text>
+        <Text style={styles.buttonText}>Zatwierdź</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={onLogin}>
-        <Text style={styles.link}>Masz już konto? Zaloguj się</Text>
+        <Text style={styles.link}>Powróć</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
-function HomeScreen({ user, onLogout }) {
+// Ekran domowy po zalogowaniu
+function HomeScreen({ user, onRegister, onLogout }) {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Zalogowano pomyślnie</Text>
@@ -130,49 +163,20 @@ function HomeScreen({ user, onLogout }) {
       <TouchableOpacity style={styles.button} onPress={onLogout}>
         <Text style={styles.buttonText}>Wyloguj</Text>
       </TouchableOpacity>
+      <TouchableOpacity onPress={onRegister}>
+        <Text style={styles.link}>Czy chcesz dodać nowego użytkownika?</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
+// Style dla aplikacji
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#121212",
-  },
-  title: {
-    fontSize: 24,
-    color: "#fff",
-    marginBottom: 20,
-  },
-  subtitle: {
-    fontSize: 18,
-    color: "#fff",
-    marginBottom: 20,
-  },
-  input: {
-    height: 40,
-    borderColor: "#bbb",
-    borderWidth: 1,
-    marginBottom: 10,
-    width: 250,
-    paddingLeft: 10,
-    color: "#fff",
-    backgroundColor: "#222",
-  },
-  button: {
-    backgroundColor: "#1E88E5",
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-  },
-  link: {
-    marginTop: 10,
-    color: "#1E88E5",
-  },
+  container: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#121212" },
+  title: { fontSize: 24, color: "#fff", marginBottom: 20 },
+  subtitle: { fontSize: 18, color: "#fff", marginBottom: 20 },
+  input: { height: 40, borderColor: "#bbb", borderWidth: 1, marginBottom: 10, width: 250, paddingLeft: 10, color: "#fff", backgroundColor: "#222" },
+  button: { backgroundColor: "#1E88E5", padding: 10, borderRadius: 5, marginTop: 10 },
+  buttonText: { color: "#fff", fontSize: 16 },
+  link: { marginTop: 10, color: "#1E88E5" },
 });
