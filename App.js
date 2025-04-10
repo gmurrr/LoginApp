@@ -160,23 +160,70 @@ function HomeScreen({ user, onRegister, onLogout }) {
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Zalogowano pomyślnie</Text>
       <Text style={styles.subtitle}>Witaj, {user.firstName} {user.lastName}!</Text>
-      <TouchableOpacity style={styles.button} onPress={onLogout}>
-        <Text style={styles.buttonText}>Wyloguj</Text>
-      </TouchableOpacity>
       <TouchableOpacity onPress={onRegister}>
         <Text style={styles.link}>Czy chcesz dodać nowego użytkownika?</Text>
       </TouchableOpacity>
+
+      <View style={styles.bottomMenu}>
+        <TouchableOpacity style={styles.button} onPress={onLogout}>
+          <Text style={styles.buttonText}>Wyloguj</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
 
 // Style dla aplikacji
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#121212" },
-  title: { fontSize: 24, color: "#fff", marginBottom: 20 },
-  subtitle: { fontSize: 18, color: "#fff", marginBottom: 20 },
-  input: { height: 40, borderColor: "#bbb", borderWidth: 1, marginBottom: 10, width: 250, paddingLeft: 10, color: "#fff", backgroundColor: "#222" },
-  button: { backgroundColor: "#1E88E5", padding: 10, borderRadius: 5, marginTop: 10 },
-  buttonText: { color: "#fff", fontSize: 16 },
-  link: { marginTop: 10, color: "#1E88E5" },
+  container: {
+    flex: 1,
+    backgroundColor: "#F8F8F2", // kość słoniowa
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 24,
+    color: "#333",
+    marginBottom: 20,
+  },
+  subtitle: {
+    fontSize: 18,
+    color: "#444",
+    marginBottom: 20,
+  },
+  input: {
+    height: 40,
+    borderColor: "#bbb",
+    borderWidth: 1,
+    marginBottom: 10,
+    width: 250,
+    paddingLeft: 10,
+    color: "#000",
+    backgroundColor: "#fff",
+  },
+  button: {
+    backgroundColor: "#006400", // ciemnozielony
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+  },
+  link: {
+    marginTop: 10,
+    color: "#1E88E5",
+  },
+  bottomMenu: {
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+    backgroundColor: "#F8F8F2", // tło paska
+    padding: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#ccc",
+    alignItems: "center",
+  },
 });
+
